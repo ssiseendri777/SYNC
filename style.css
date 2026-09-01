@@ -1,0 +1,59 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f0f2f5;
+  color: #222;
+  margin: 0;
+  padding: 0;
+  transition: background 0.3s, color 0.3s;
+}
+
+header, main, footer {
+  text-align: center;
+  padding: 20px;
+}
+
+.buttons {
+  margin-top: 20px;
+}
+
+.btn {
+  display: inline-block;
+  margin: 10px;
+  padding: 12px 20px;
+  background: #0077b5;
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #005582;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  margin: 10px;
+  transition: transform 0.3s;
+}
+
+.icon-btn:hover {
+  transform: rotate(20deg);
+}
+
+/* Dark mode styles */
+body.dark {
+  background: #121212;
+  color: #eee;
+}
+
+body.dark .btn {
+  background: #444;
+}
+
+body.dark .btn:hover {
+  background: #666;
+}
