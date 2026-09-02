@@ -1,59 +1,170 @@
+* {
+  box-sizing: border-box;
+}
 body {
-  font-family: 'Poppins', sans-serif;
-  background: #f0f2f5;
-  color: #222;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f4f8;
   margin: 0;
   padding: 0;
   transition: background 0.3s, color 0.3s;
 }
-
-header, main, footer {
-  text-align: center;
+header {
+  background: #800020;
+  color: white;
   padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  text-align: center;
 }
-
-.buttons {
-  margin-top: 20px;
+.university-logo {
+  height: 100px;
+  width: auto;
+  max-width: 100%;
+  margin-right: 0px;
 }
-
-.btn {
-  display: inline-block;
-  margin: 10px;
-  padding: 12px 20px;
-  background: #0077b5;
+.header-text {
+  flex: 1;
+  min-width: 200px;
+}
+header h1 {
+  margin: 0;
+  font-size: 4.5vw;
+}
+header h2 {
+  margin: 5px 0 0;
+  font-size: 3vw;
+  font-weight: normal;
+  font-family: 'Georgia', serif;
+  color: #ffcc00;
+}
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    align-items: center;
+  }
+  .university-logo {
+    height: 200px;
+    margin: 0 auto 10px;
+  }
+  header h1 {
+    font-size: 6vw;
+  }
+  header h2 {
+    font-size: 4vw;
+  }
+}
+@media (max-width: 480px) {
+  .university-logo {
+    height: 50px;
+  }
+}
+.welcome-junior {
+  text-align: center;
+  padding: 30px;
+  font-size: 1.3em;
   color: #fff;
-  border-radius: 6px;
-  text-decoration: none;
-  transition: 0.3s;
+  background-color: #53041b;
+  border-radius: 8px;
+  max-width: 800px;
+  margin: 20px auto;
+  transition: background-color 0.3s, color 0.3s;
 }
-
-.btn:hover {
-  background: #005582;
+.welcome-junior h3 {
+  font-size: 1.8em;
+  background-color: #53041b;
+  color: yellowgreen;
+  margin-bottom: 15px;
 }
-
-.icon-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
+.welcome-junior p {
+  margin: 10px 0;
+  font-family: 'Times New Roman', Times, serif;
+}
+.buttons {
+  text-align: center;
+  margin: 30px 0;
+}
+.buttons button,
+.buttons a {
+  padding: 10px 20px;
   margin: 10px;
-  transition: transform 0.3s;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #800020;
+  color: white;
+  transition: background 0.3s;
+  text-decoration: none;
+}
+.buttons button:hover,
+.buttons a:hover {
+  background-color: #20c44f;
+}
+.copyright {
+  text-align: center;
+  background-color: #121212;
+  color: #fff;
+}
+/* =========================
+   DARK MODE
+   ========================= */
+
+body.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
 }
 
-.icon-btn:hover {
-  transform: rotate(20deg);
+/* Header */
+body.dark-mode header {
+    background-color: #333333;
 }
 
-/* Dark mode styles */
-body.dark {
-  background: #121212;
-  color: #eee;
+/* Welcome section */
+body.dark-mode .welcome-junior {
+    background-color: #333333;
+    color: #ffffff;
 }
 
-body.dark .btn {
-  background: #444;
+body.dark-mode .welcome-junior h3 {
+    background-color: #333333;
+    color: #9acd32;
 }
 
-body.dark .btn:hover {
-  background: #666;
+/* Buttons */
+body.dark-mode .buttons button,
+body.dark-mode .buttons a {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+body.dark-mode .buttons button:hover,
+body.dark-mode .buttons a:hover {
+    background-color: #a09696;
+}
+
+/* Footer */
+body.dark-mode .copyright {
+    background-color: #080808;
+    color: #ffffff;
+}
+
+/* Dark mode toggle button */
+body.dark-mode #darkToggle {
+    background-color: #333333;
+    color: #ffffff;
+}
+body.dark-mode #darkToggle:hover{
+    background-color: white;
+    color:black;
+}
+#darkToggle {
+    transition: background-color 0.3s, color 0.3s, transform 0.2s;
+}
+
+#darkToggle:hover {
+    background-color: #0e0e0e;
+    color: #eee8e8;
+    transform: scale(1.1);
 }

@@ -3,35 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MCA Batch Portal</title>
+  <title>CS BATCH 2025-27</title>
   <link rel="stylesheet" href="style.css">
-  <!-- FontAwesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="scripts.js" defer></script>
 </head>
 <body>
+
   <header>
-    <h1>BERHAMPUR UNIVERSITY</h1>
-    <h2>P.G. Department of Computer Science</h2>
+    <img src="images/bu logo.jpeg" alt="University Logo" class="university-logo">
+    <div class="header-text">
+      <h1>BERHAMPUR UNIVERSITY</h1>
+      <h2>P.G. Department of Computer Science</h2>
+    </div>
+      <div class="buttons">
+    <button id="darkToggle" class="icon-btn">
+      <i class="fas fa-moon"></i>
+    </button>
+  </div>
   </header>
 
-  <main>
-    <h3>Welcome to the Department of Computer Science!</h3>
-    <p>Dear Juniors, we are thrilled to have you as part of our growing community of tech enthusiasts, innovators, and problem solvers.</p>
+  <!-- Welcome Junior Message -->
+  <div class="welcome-junior">
+    <h3>🎉 A Warm Welcome to Our Juniors! 🎉</h3>
+    <h3>CS Family of Berhampur University! 💻🎓</h3>
+    <p>A new journey begins, and we’re happy to have you with us.</p>
+    <p>Here, seniors and juniors aren’t just classmates — we’re a family that learns, grows, and supports each other.</p>
+    <p>Feel free to ask, share, discuss, make friends, and most importantly, enjoy the journey!</p>
+    <h4>💙 Here’s to new beginnings, great friendships, and unforgettable memories!</h4>
+    <p>Let’s learn, grow, and make this journey memorable together! ✨</p>
+  </div>
 
-    <div class="buttons">
-      <a href="https://chat.whatsapp.com/CHR27G2iHUg1rWMPDiVvtr" class="btn">Join WhatsApp Group</a>
-      <a href="profiles/profiles.html" class="btn">Connect with Seniors</a>
-      <!-- Dark mode toggle icon -->
-      <button id="darkToggle" class="icon-btn">
-        <i class="fas fa-moon"></i>
-      </button>
-    </div>
-  </main>
+  <div class="buttons">
+    <button onclick="window.location.href='https://chat.whatsapp.com/CHR27G2iHUg1rWMPDiVvtr'">Join WhatsApp
+      Group</button>
+    <button onclick="window.location.href='profiles/profiles.html'">Connect with Seniors</button>
+  </div>
 
-  <footer>
-    <p>© 2025 Senior-Junior Connectivity Platform. All rights reserved.</p>
-  </footer>
-
-  <script src="script.js"></script>
+  <div class="copyright">
+    <footer>
+      <p>&copy; 2026 Senior-Junior Connectivity Platform. All rights reserved.</p>
+    </footer>
+  </div>
 </body>
+
 </html>

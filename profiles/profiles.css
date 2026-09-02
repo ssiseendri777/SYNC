@@ -30,11 +30,11 @@ header h1 {
 }
 
 .profile-card {
-  width: 250px;
+  width: 300px;
   padding: 20px;
   margin: 15px;
   border-radius: 10px;
-  background: #fff;
+  background: #eeeff0;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   transition: 0.3s;
@@ -42,12 +42,13 @@ header h1 {
 
 .profile-card:hover {
   transform: scale(1.05);
+  background: #a3eeac;
   box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
 .profile-card img {
-  width: 100px;
-  border-radius: 50%;
+  width: 150px;
+  border-radius: 100%;
   margin-bottom: 10px;
 }
 
