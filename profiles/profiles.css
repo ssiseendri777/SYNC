@@ -800,6 +800,10 @@ button {
   color: #FFFC00;
 }
 
+.social-links a.facebook:hover {
+  color: #1877F2;
+}
+
 .social-links a.threads:hover {
   color: #111;
 }
