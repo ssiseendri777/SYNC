@@ -792,6 +792,14 @@ button {
   color: #e4405f;
 }
 
+.social-links a.twitter:hover {
+  color: #000000;
+}
+
+.social-links a.snapchat:hover {
+  color: #FFFC00;
+}
+
 .social-links a.threads:hover {
   color: #111;
 }
