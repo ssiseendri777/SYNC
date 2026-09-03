@@ -15,8 +15,6 @@ const originalCards = Array.from(
 let filteredCards = [...originalCards];
 
 let currentIndex = 0;
-let cardStep = 0;
-let cardWidth = 0;
 
 let autoPlayTimer = null;
 
@@ -24,25 +22,39 @@ const AUTO_PLAY_DELAY = 3000;
 
 
 // =====================================================
-// CALCULATE CARD POSITION
+// DRAG SETTINGS
 // =====================================================
 
-function calculateCardStep() {
+let isDragging = false;
 
-    const firstCard = track.querySelector(".profile-card");
+let dragStartX = 0;
+let dragCurrentX = 0;
 
-    if (!firstCard) {
-        cardStep = 0;
-        cardWidth = 0;
-        return;
+let dragStartTransform = 0;
+
+let hasDragged = false;
+
+let suppressClick = false;
+
+const DRAG_THRESHOLD = 80;
+
+
+// =====================================================
+// GET CURRENT TRACK POSITION
+// =====================================================
+
+function getCurrentTransform() {
+
+    const transform =
+        window.getComputedStyle(track).transform;
+
+    if (transform === "none") {
+        return 0;
     }
 
-    const cardStyle = window.getComputedStyle(track);
-    const gap = parseFloat(cardStyle.columnGap) || 0;
+    const matrix = new DOMMatrix(transform);
 
-    cardWidth = firstCard.getBoundingClientRect().width;
-
-    cardStep = cardWidth + gap;
+    return matrix.m41;
 }
 
 
@@ -52,7 +64,8 @@ function calculateCardStep() {
 
 function updateCenterCard() {
 
-    const cards = track.querySelectorAll(".profile-card");
+    const cards =
+        track.querySelectorAll(".profile-card");
 
     cards.forEach((card, index) => {
 
@@ -75,64 +88,62 @@ function moveTrack(animate = true) {
         return;
     }
 
-    const cards = track.querySelectorAll(".profile-card");
+    const cards =
+        track.querySelectorAll(".profile-card");
 
     if (!cards.length) {
         return;
     }
 
-    const targetCard = cards[currentIndex];
+    const targetCard =
+        cards[currentIndex];
 
     if (!targetCard) {
         return;
     }
 
 
-    // Temporarily remove the transform so we can
-    // measure the card's real position.
-    track.style.transition = "none";
-    track.style.transform = "translateX(0)";
+    /*
+        Calculate the target position directly.
+
+        IMPORTANT:
+        We DO NOT reset the track to translateX(0)
+        before moving.
+    */
+
+    const cardLeft =
+        targetCard.offsetLeft;
+
+    const cardWidth =
+        targetCard.getBoundingClientRect().width;
+
+    const containerCenter =
+        carousel.clientWidth / 2;
+
+    const offset =
+        containerCenter
+        - cardLeft
+        - (cardWidth / 2);
 
 
-    requestAnimationFrame(() => {
+    /*
+        Normal movement:
+        smooth physical slide.
 
-        const containerRect =
-            carousel.getBoundingClientRect();
+        During drag:
+        transition is disabled separately.
+    */
 
-        const cardRect =
-            targetCard.getBoundingClientRect();
-
-
-        // Center of carousel
-        const containerCenter =
-            containerRect.left +
-            (containerRect.width / 2);
+    track.style.transition = animate
+        ? "transform 0.85s cubic-bezier(0.22, 1, 0.36, 1)"
+        : "none";
 
 
-        // Center of selected card
-        const cardCenter =
-            cardRect.left +
-            (cardRect.width / 2);
+    track.style.transform =
+        `translateX(${offset}px)`;
 
 
-        // Exact amount required to move the card
-        // into the middle of the carousel.
-        const offset =
-            containerCenter - cardCenter;
-
-
-        track.style.transition = animate
-            ? "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)"
-            : "none";
-
-
-        track.style.transform =
-            `translateX(${offset}px)`;
-
-
-        updateCenterCard();
-
-    });
+    updateCenterCard();
 }
 
 
@@ -148,7 +159,8 @@ function buildCarousel() {
 
         currentIndex = 0;
 
-        track.style.transform = "translateX(0)";
+        track.style.transform =
+            "translateX(0)";
 
         updateButtonState();
 
@@ -157,26 +169,25 @@ function buildCarousel() {
 
 
     /*
-        We create three copies:
+        Three copies:
 
-        [COPY 1] [MAIN] [COPY 3]
-
-        When the user reaches either end,
-        JavaScript silently jumps to the
-        corresponding card in the middle.
+        COPY 1 | MAIN | COPY 3
     */
 
-    const firstSet = filteredCards.map(card =>
-        card.cloneNode(true)
-    );
+    const firstSet =
+        filteredCards.map(card =>
+            card.cloneNode(true)
+        );
 
-    const secondSet = filteredCards.map(card =>
-        card.cloneNode(true)
-    );
+    const secondSet =
+        filteredCards.map(card =>
+            card.cloneNode(true)
+        );
 
-    const thirdSet = filteredCards.map(card =>
-        card.cloneNode(true)
-    );
+    const thirdSet =
+        filteredCards.map(card =>
+            card.cloneNode(true)
+        );
 
 
     firstSet.forEach(card =>
@@ -192,12 +203,15 @@ function buildCarousel() {
     );
 
 
-    currentIndex = filteredCards.length;
+    /*
+        Start inside the middle copy.
+    */
+
+    currentIndex =
+        filteredCards.length;
 
 
     requestAnimationFrame(() => {
-
-        calculateCardStep();
 
         moveTrack(false);
 
@@ -208,7 +222,7 @@ function buildCarousel() {
 
 
 // =====================================================
-// MOVE ONE CARD TO THE RIGHT
+// NEXT SLIDE
 // =====================================================
 
 function nextSlide() {
@@ -226,7 +240,7 @@ function nextSlide() {
 
 
 // =====================================================
-// MOVE ONE CARD TO THE LEFT
+// PREVIOUS SLIDE
 // =====================================================
 
 function previousSlide() {
@@ -247,65 +261,95 @@ function previousSlide() {
 // INFINITE LOOP
 // =====================================================
 
-track.addEventListener("transitionend", () => {
+track.addEventListener(
+    "transitionend",
+    (event) => {
 
-    const total = filteredCards.length;
+        /*
+            Only react to the transform transition.
+        */
 
-    if (!total) {
-        return;
+        if (event.propertyName !== "transform") {
+            return;
+        }
+
+
+        /*
+            Ignore while the user is dragging.
+        */
+
+        if (isDragging) {
+            return;
+        }
+
+
+        const total =
+            filteredCards.length;
+
+        if (!total) {
+            return;
+        }
+
+
+        /*
+            Re-enter middle copy after reaching COPY 3.
+        */
+
+        if (currentIndex >= total * 2) {
+
+            currentIndex -= total;
+
+            moveTrack(false);
+
+        }
+
+
+        /*
+            Re-enter middle copy after reaching COPY 1.
+        */
+
+        else if (currentIndex < total) {
+
+            currentIndex += total;
+
+            moveTrack(false);
+
+        }
+
     }
-
-
-    /*
-        If we move into COPY 3,
-        jump back to MAIN.
-    */
-
-    if (currentIndex >= total * 2) {
-
-        currentIndex -= total;
-
-        moveTrack(false);
-
-    }
-
-
-    /*
-        If we move into COPY 1,
-        jump forward to MAIN.
-    */
-
-    else if (currentIndex < total) {
-
-        currentIndex += total;
-
-        moveTrack(false);
-
-    }
-
-});
+);
 
 
 // =====================================================
 // BUTTON CONTROLS
 // =====================================================
 
-nextBtn.addEventListener("click", () => {
+nextBtn.addEventListener(
+    "click",
+    (event) => {
 
-    nextSlide();
+        event.preventDefault();
 
-});
+        nextSlide();
+
+    }
+);
 
 
-prevBtn.addEventListener("click", () => {
+prevBtn.addEventListener(
+    "click",
+    (event) => {
 
-    previousSlide();
+        event.preventDefault();
 
-});
+        previousSlide();
+
+    }
+);
 
 
 // =====================================================
-// AUTOMATIC RIGHT → LEFT MOVEMENT
+// AUTOPLAY
 // =====================================================
 
 function startAutoPlay() {
@@ -316,14 +360,22 @@ function startAutoPlay() {
         return;
     }
 
-    autoPlayTimer = setInterval(() => {
+    autoPlayTimer =
+        setInterval(() => {
 
-        currentIndex++;
+            /*
+                Never autoplay while dragging.
+            */
 
-        moveTrack(true);
+            if (isDragging) {
+                return;
+            }
 
-    }, AUTO_PLAY_DELAY);
+            currentIndex++;
 
+            moveTrack(true);
+
+        }, AUTO_PLAY_DELAY);
 }
 
 
@@ -335,7 +387,6 @@ function stopAutoPlay() {
 
         autoPlayTimer = null;
     }
-
 }
 
 
@@ -347,21 +398,285 @@ function restartAutoPlay() {
 
 
 // =====================================================
-// PAUSE WHEN HOVERING
+// PAUSE ON HOVER
 // =====================================================
 
-carousel.addEventListener("mouseenter", () => {
+carousel.addEventListener(
+    "mouseenter",
+    () => {
+
+        if (!isDragging) {
+            stopAutoPlay();
+        }
+
+    }
+);
+
+
+carousel.addEventListener(
+    "mouseleave",
+    () => {
+
+        if (!isDragging) {
+            startAutoPlay();
+        }
+
+    }
+);
+
+
+// =====================================================
+// START DRAG
+// =====================================================
+
+function startDrag(event) {
+
+    /*
+        IMPORTANT:
+        Don't start carousel dragging when the user
+        is actually clicking a profile link or button.
+    */
+
+    if (event.target.closest("a, button")) {
+        return;
+    }
+
+
+    /*
+        Only allow the left mouse button.
+    */
+
+    if (
+        event.type === "mousedown" &&
+        event.button !== 0
+    ) {
+        return;
+    }
+
+
+    isDragging = true;
+
+    hasDragged = false;
+
+    suppressClick = false;
+
+
+    dragStartX =
+        event.type === "touchstart"
+            ? event.touches[0].clientX
+            : event.clientX;
+
+
+    dragCurrentX =
+        dragStartX;
+
+
+    dragStartTransform =
+        getCurrentTransform();
+
+
+    /*
+        Disable transition so the track follows
+        the cursor exactly.
+    */
+
+    track.style.transition = "none";
+
 
     stopAutoPlay();
 
-});
+
+    carousel.classList.add(
+        "is-dragging"
+    );
+}
 
 
-carousel.addEventListener("mouseleave", () => {
+// =====================================================
+// DRAG MOVE
+// =====================================================
+
+function dragMove(event) {
+
+    if (!isDragging) {
+        return;
+    }
+
+
+    dragCurrentX =
+        event.type === "touchmove"
+            ? event.touches[0].clientX
+            : event.clientX;
+
+
+    const deltaX =
+        dragCurrentX - dragStartX;
+
+
+    /*
+        Mark it as a real drag once the mouse/finger
+        has moved enough.
+    */
+
+    if (Math.abs(deltaX) > 5) {
+
+        hasDragged = true;
+
+        suppressClick = true;
+
+    }
+
+
+    /*
+        Track follows cursor directly.
+    */
+
+    track.style.transform =
+        `translateX(${dragStartTransform + deltaX}px)`;
+}
+
+
+// =====================================================
+// END DRAG
+// =====================================================
+
+function endDrag() {
+
+    if (!isDragging) {
+        return;
+    }
+
+
+    isDragging = false;
+
+
+    carousel.classList.remove(
+        "is-dragging"
+    );
+
+
+    const deltaX =
+        dragCurrentX - dragStartX;
+
+
+    /*
+        Drag left → next card
+    */
+
+    if (deltaX < -DRAG_THRESHOLD) {
+
+        currentIndex++;
+
+    }
+
+
+    /*
+        Drag right → previous card
+    */
+
+    else if (deltaX > DRAG_THRESHOLD) {
+
+        currentIndex--;
+
+    }
+
+
+    /*
+        Small drag → return to the current card.
+        Large drag → settle on the next/previous card.
+    */
+
+    moveTrack(true);
+
 
     startAutoPlay();
 
-});
+
+    /*
+        If a real drag occurred, the browser may
+        generate a click immediately afterwards.
+        Keep that click suppressed briefly.
+    */
+
+    if (hasDragged) {
+
+        setTimeout(() => {
+
+            suppressClick = false;
+            hasDragged = false;
+
+        }, 120);
+
+    }
+}
+
+
+// =====================================================
+// MOUSE EVENTS
+// =====================================================
+
+carousel.addEventListener(
+    "mousedown",
+    startDrag
+);
+
+window.addEventListener(
+    "mousemove",
+    dragMove
+);
+
+window.addEventListener(
+    "mouseup",
+    endDrag
+);
+
+
+// =====================================================
+// TOUCH EVENTS
+// =====================================================
+
+carousel.addEventListener(
+    "touchstart",
+    startDrag,
+    {
+        passive: true
+    }
+);
+
+carousel.addEventListener(
+    "touchmove",
+    dragMove,
+    {
+        passive: true
+    }
+);
+
+carousel.addEventListener(
+    "touchend",
+    endDrag
+);
+
+
+// =====================================================
+// PREVENT ONLY ACCIDENTAL CLICKS AFTER DRAGGING
+// =====================================================
+
+carousel.addEventListener(
+    "click",
+    (event) => {
+
+        if (suppressClick) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            suppressClick = false;
+
+        }
+
+    },
+    true
+);
 
 
 // =====================================================
@@ -371,22 +686,26 @@ carousel.addEventListener("mouseleave", () => {
 function searchProfiles() {
 
     const input =
-        document.getElementById("search")
+        document
+            .getElementById("search")
             .value
             .trim()
             .toLowerCase();
 
 
-    filteredCards = originalCards.filter(card => {
+    filteredCards =
+        originalCards.filter(card => {
 
-        const name =
-            card.querySelector("h3")
-                .innerText
-                .toLowerCase();
+            const name =
+                card
+                    .querySelector("h3")
+                    .innerText
+                    .toLowerCase();
 
-        return name.includes(input);
 
-    });
+            return name.includes(input);
+
+        });
 
 
     stopAutoPlay();
@@ -394,7 +713,6 @@ function searchProfiles() {
     buildCarousel();
 
     startAutoPlay();
-
 }
 
 
@@ -407,15 +725,24 @@ function updateButtonState() {
     const disabled =
         filteredCards.length <= 1;
 
-    prevBtn.disabled = disabled;
-    nextBtn.disabled = disabled;
+
+    prevBtn.disabled =
+        disabled;
+
+    nextBtn.disabled =
+        disabled;
+
 
     prevBtn.style.opacity =
-        disabled ? "0.4" : "1";
+        disabled
+            ? "0.4"
+            : "1";
+
 
     nextBtn.style.opacity =
-        disabled ? "0.4" : "1";
-
+        disabled
+            ? "0.4"
+            : "1";
 }
 
 
@@ -423,13 +750,56 @@ function updateButtonState() {
 // RESPONSIVE RECALCULATION
 // =====================================================
 
-window.addEventListener("resize", () => {
+window.addEventListener(
+    "resize",
+    () => {
 
-    calculateCardStep();
+        if (!isDragging) {
 
-    moveTrack(false);
+            moveTrack(false);
 
-});
+        }
+
+    }
+);
+
+
+// =====================================================
+// KEYBOARD CONTROLS
+// =====================================================
+
+document.addEventListener(
+    "keydown",
+    (event) => {
+
+        /*
+            Don't hijack arrow keys while typing
+            in the search box.
+        */
+
+        if (
+            document.activeElement &&
+            document.activeElement.tagName === "INPUT"
+        ) {
+            return;
+        }
+
+
+        if (event.key === "ArrowRight") {
+
+            nextSlide();
+
+        }
+
+
+        if (event.key === "ArrowLeft") {
+
+            previousSlide();
+
+        }
+
+    }
+);
 
 
 // =====================================================
